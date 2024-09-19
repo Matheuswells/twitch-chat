@@ -1,0 +1,21 @@
+{
+  "name": "wedding-gifts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node ./dist/index.js",
+    "dev": "tsc && node ./dist/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.5.5",
+    "@types/tmi.js": "^1.8.6",
+    "typescript": "^5.6.2"
+  },
+  "dependencies": {
+    "tmi.js": "^1.8.5"
+  }
+}
