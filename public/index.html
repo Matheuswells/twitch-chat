@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitch Chatbox</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div id="chatbox"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Adjusted function to only detect colors that are very close to black
+        function isDarkColor(hexColor) {
+            const rgb = parseInt(hexColor.substring(1), 16); // Convert hex to RGB
+            const r = (rgb >> 16) & 0xff;
+            const g = (rgb >> 8) & 0xff;
+            const b = (rgb >> 0) & 0xff;
+
+            // Define a strict threshold for dark colors (close to black)
+            const darknessThreshold = 40; // Values close to black are <= 40
+
+            return r <= darknessThreshold && g <= darknessThreshold && b <= darknessThreshold;
+        }
+
+        socket.on('chat message', function(msg) {
+            const chatbox = document.getElementById('chatbox');
+
+            // Create the container for the message
+            const messageElement = document.createElement('div');
+            messageElement.className = 'chat-message';
+
+            // Create the div to wrap the username (strong) element
+            const usernameDiv = document.createElement('div');
+            usernameDiv.style.borderRadius = '0 10px 10px 10px'; // 10px rounding except top-left corner
+            usernameDiv.style.padding = '5px';
+            usernameDiv.style.display = 'inline-block';
+
+            // If the color is very dark (close to black), change to a bright background for usernameDiv
+            if (isDarkColor(msg.color)) {
+                usernameDiv.style.backgroundColor = '#ffffff'; // Bright background
+                usernameDiv.style.border = '1px solid #ffffff'; // Matching border
+            } else {
+                usernameDiv.style.backgroundColor = msg.color;  // Original color if not dark
+                usernameDiv.style.border = `1px solid ${msg.color}`;
+            }
+
+            // Create the strong element for the username
+            const strongElement = document.createElement('strong');
+            strongElement.style.color = "#1e1e1e";  // Set a fixed color for the username text
+            strongElement.textContent = `${msg.username}:`;
+
+            // Append strong to the usernameDiv
+            usernameDiv.appendChild(strongElement);
+
+            // Append usernameDiv and the message text to messageElement
+            messageElement.appendChild(usernameDiv);
+            messageElement.innerHTML += ` ${msg.message}`;
+
+            // If the user is a subscriber, add a special border to the message box
+            if (msg.subscriber) {
+                messageElement.style.border = '2px solid gold';
+            }
+
+            // Append the message to the chatbox
+            chatbox.appendChild(messageElement);
+
+            // Animate the message (optional)
+            setTimeout(() => {
+                messageElement.classList.add('show');
+            }, 10);
+
+            // Automatically scroll to the bottom
+            chatbox.scrollTop = chatbox.scrollHeight;
+
+            // Limit the number of messages in the chatbox (remove old ones if too many)
+            if (chatbox.childElementCount > 50) {
+                chatbox.removeChild(chatbox.firstChild);
+            }
+        });
+    </script>
+</body>
+</html>

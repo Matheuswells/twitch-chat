@@ -1,30 +1,53 @@
+import express from 'express';
+import http from 'http';
+import { Server } from 'socket.io';
 import tmi from 'tmi.js';
+import 'dotenv/config'
+import { subscribe } from 'diagnostics_channel';
+require('dotenv').config()
 
-// Set up your Twitch client options
-const client = new tmi.Client({
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+const username: string = process.env.TWITCH_USER as string
+const token: string  = process.env.TWITCH_TOKEN as string
+
+app.use(express.static('public'));
+
+const twitchClient = new tmi.Client({
     options: { debug: true },
     connection: {
         reconnect: true,
-        secure: true
+        secure: true,
     },
     identity: {
-        // Use your Twitch account credentials or bot account credentials
-        username: 'grizzyrp',
-        password: 'oauth:73vin5w2bjyjyl0n848tsz3ijn7dzf'  // Generate from https://twitchapps.com/tmi/
+        username: username,
+        password: token,
     },
-    channels: ['lordwtap']  // List of channels you want to connect to
+    channels: ['gaules'],
 });
 
-// Connect to Twitch chat
-client.connect().catch(console.error);
+twitchClient.connect().catch(console.error);
 
-// Event listener for when a message is sent in the chat
-client.on('message', (channel, userstate, message, self) => {
-    if (self) return; // Ignore messages from the bot itself
+const ignoredBots = ['StreamElements', 'Streamlabs', 'Nightbot'];
 
-    const badges = userstate['badges'];
-    // Check if the message is from the user 'grizzyrp'
-  
-        console.log(`[${userstate['display-name']}] ${message}`);
-        console.log('aa', badges)
+twitchClient.on('message', (channel, userstate, message, self) => {
+    if (self || ignoredBots.includes(userstate['display-name'] as string)) return;
+
+
+    // console.log(userstate)
+
+    const chatMessage = {
+        username: userstate['display-name'] || 'Anonymous',
+        color: userstate['color'],
+        subscriber: userstate['subscriber'],
+        message,
+    };
+
+    io.emit('chat message', chatMessage);
+});
+
+server.listen(3000, () => {
+    console.log('Server is running on http://localhost:3000');
 });
