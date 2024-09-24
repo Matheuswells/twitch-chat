@@ -25,7 +25,7 @@ const twitchClient = new tmi.Client({
         username: username,
         password: token,
     },
-    channels: ['gaules'],
+    channels: [ process.env.CHANNEL as string],
 });
 
 twitchClient.connect().catch(console.error);
