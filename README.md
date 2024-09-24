@@ -14,3 +14,6 @@
 
 ### Staring
 - Just execute the start.bat
+
+### Example
+![image](https://github.com/user-attachments/assets/353cb9b4-be5f-4ae2-b5b3-e3855074c6b3)
